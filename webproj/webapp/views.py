@@ -1,7 +1,9 @@
 from django.shortcuts import render
 import logging
+from datetime import timedelta
 from django.http import HttpResponse
-from webapp.models import Client
+from django.utils import timezone
+from webapp.models import Client, Order, OrderItem
 # Настраиваем логирование
 logger = logging.getLogger(__name__)
 
@@ -46,3 +48,44 @@ def clients_list(request):
                  "</tr>")
     html += "</table>"
     return HttpResponse(html)
+
+def clients_orders(request, client_id):
+    client = Client.objects.get(pk=client_id)
+    orders = Order.objects.filter(client=Client)
+
+    orders_products = []
+    for order in orders:
+        order_items = OrderItem.objects.filter(order=order)
+        product_counted = []
+        for item in order_items:
+            product = item.product
+            quantity = item.product_count
+            product_counted.append((product, quantity))
+        orders_products.append((order,product_counted))
+
+    context = {'orders_products': orders_products, 'Client': client}
+    return render(request, "webapp/client.html", context)
+
+
+def show_orders_period(request, client_id):
+    now = timezone.now()  
+    periods = {
+        'week': now - timedelta(days=7),  
+        'month': now - timedelta(days=30),
+        'year': now - timedelta(days=365),
+    }
+
+    orders_data = {}
+    client = Client.objects.get(pk=client_id)
+
+    for period, start_date in periods.items():
+        orders_data[period] = OrderItem.objects.filter(
+            order__client=client,     
+            order__date_ordered__gte=start_date   
+        ).select_related('order', 'product').order_by('-order__date_ordered')
+
+    context = {
+        'orders_data': orders_data,
+        'client': client
+    }
+    return render(request, "webapp/recent_orders.html", context)

@@ -47,3 +47,11 @@ class Order(models.Model):
 
     def __str__(self):
         return f'{self.pk} - {self.order_date}'
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product_count = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+
+    def __str__(self):
+        return f'Order {self.order.id}: {self.product.name} - {self.product_count}'

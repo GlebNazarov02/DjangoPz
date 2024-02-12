@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}main{% endblock %}
+
+{% block content %}
+    <h1>Client: {{ client.name }}</h1>
+
+    {% for order, product_counted in orders_products %}
+        <p>Order ID: {{ order.id }} - Date: {{ order.date_ordered }}</p>
+        <h3>Products:</h3>
+        <ul>
+            {% for product, quantity in product_counted %}
+                <li>{{ product.name }} - Price: {{ product.price }} - Quantity: {{ quantity }}</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+{% endblock %}

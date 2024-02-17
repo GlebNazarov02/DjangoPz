@@ -27,6 +27,8 @@ class Product(models.Model):
     cost = models.DecimalField(max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     prod_count = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     append_date = models.DateTimeField(auto_now=True) 
+    image = models.ImageField(null=True)
+
     def __str__(self):
         return f'{self.prod_name}, наличие: {self.prod_count}, цена: {self.cost}'
 

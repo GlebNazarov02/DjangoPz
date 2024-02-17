@@ -1,9 +1,14 @@
 from django.shortcuts import render
 import logging
+from django.core.files.storage import FileSystemStorage
 from datetime import timedelta
 from django.http import HttpResponse
 from django.utils import timezone
 from webapp.models import Client, Order, OrderItem
+from . import models
+from . import forms
+from django.shortcuts import render, redirect
+from webapp.forms import ImageForm
 # Настраиваем логирование
 logger = logging.getLogger(__name__)
 
@@ -89,3 +94,38 @@ def show_orders_period(request, client_id):
         'client': client
     }
     return render(request, "webapp/recent_orders.html", context)
+
+def change_product(request, product_id):
+    product = models.Product.objects.filter(pk=product_id).first()
+    form = forms.ProductForm(request.POST, request.FILES)
+    if request.method == 'POST' and form.is_valid():
+        image = form.cleaned_data['image']
+        if isinstance(image, bool):
+            image = None
+        if image is not None:
+            fs = FileSystemStorage()
+            fs.save(image.name, image)
+        product.prod_name = form.cleaned_data['name']
+        product.description = form.cleaned_data['description']
+        product.cost = form.cleaned_data['price']
+        product.prod_count = form.cleaned_data['amount']
+        product.image = image
+        product.save()
+        return redirect('products')
+    else:
+        form = forms.ProductForm(initial={'name': product.prod_name, 'description': product.description,
+                                          'price': product.cost, 'amount': product.prod_count, 'image': product.image})
+
+    return render(request, 'webapp/change_product.html', {'form': form})
+
+
+def upload_image(request):
+    if request.method == 'POST':
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            image = form.cleaned_data['image']
+            fs = FileSystemStorage()
+            fs.save(image.name, image)
+    else:
+        form = ImageForm()
+    return render(request, 'webapp/upload_image.html', {'form': form})

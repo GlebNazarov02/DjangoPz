@@ -61,12 +61,12 @@ def clients_orders(request, client_id):
     orders_products = []
     for order in orders:
         order_items = OrderItem.objects.filter(order=order)
-        product_counted = []
+        quantityed = []
         for item in order_items:
             product = item.product
-            quantity = item.product_count
-            product_counted.append((product, quantity))
-        orders_products.append((order,product_counted))
+            quantity = item.quantity
+            quantityed.append((product, quantity))
+        orders_products.append((order,quantityed))
 
     context = {'orders_products': orders_products, 'Client': client}
     return render(request, "webapp/client.html", context)
@@ -105,16 +105,16 @@ def change_product(request, product_id):
         if image is not None:
             fs = FileSystemStorage()
             fs.save(image.name, image)
-        product.prod_name = form.cleaned_data['name']
+        product.pname = form.cleaned_data['name']
         product.description = form.cleaned_data['description']
         product.cost = form.cleaned_data['price']
-        product.prod_count = form.cleaned_data['amount']
+        product.quantity = form.cleaned_data['amount']
         product.image = image
         product.save()
         return redirect('products')
     else:
-        form = forms.ProductForm(initial={'name': product.prod_name, 'description': product.description,
-                                          'price': product.cost, 'amount': product.prod_count, 'image': product.image})
+        form = forms.ProductForm(initial={'name': product.pname, 'description': product.description,
+                                          'price': product.cost, 'amount': product.quantity, 'image': product.image})
 
     return render(request, 'webapp/change_product.html', {'form': form})
 

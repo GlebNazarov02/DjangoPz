@@ -22,20 +22,20 @@ class Client(models.Model):
 
 
 class Product(models.Model):
-    prod_name = models.CharField(max_length=250, null=False)
+    pname = models.CharField(max_length=250, null=False)
     description = models.TextField(null=True)
     cost = models.DecimalField(max_digits=8, decimal_places=2, default=0, validators=[MinValueValidator(0)])
-    prod_count = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     append_date = models.DateTimeField(auto_now=True) 
     image = models.ImageField(null=True)
 
     def __str__(self):
-        return f'{self.prod_name}, наличие: {self.prod_count}, цена: {self.cost}'
+        return f'{self.pname}, наличие: {self.quantity}, цена: {self.cost}'
 
     class Meta:
-        ordering = ['prod_name']
+        ordering = ['pname']
         indexes = [
-            models.Index(fields=['prod_name']),
+            models.Index(fields=['pname']),
             models.Index(fields=['-append_date']),
             models.Index(fields=['cost']),
         ]
@@ -53,7 +53,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    product_count = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+    quantity = models.IntegerField(default=1, validators=[MinValueValidator(1)])
 
     def __str__(self):
-        return f'Order {self.order.id}: {self.product.name} - {self.product_count}'
+        return f'Order {self.order.id}: {self.product.name} - {self.quantity}'
